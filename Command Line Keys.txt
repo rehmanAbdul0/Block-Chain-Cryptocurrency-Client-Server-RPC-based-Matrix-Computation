@@ -1,3 +1,44 @@
 go run "e:\Assignments\S8\Blockchain\A1\worker.go"-port 1235 -cert worker1.crt -key worker1.key
 
 go run coordinator.go -workers "localhost:1235,localhost:1236,localhost:1237"
+
+=====================
+localhost .cnf file:
+[req]
+distinguished_name = req_distinguished_name
+x509_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+CN = localhost
+
+[v3_req]
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = localhost
+IP.1 = 127.0.0.1
+==================
+-----------With IP -------------------
+[ req ]
+distinguished_name = req_distinguished_name
+req_extensions     = v3_req
+prompt             = no
+
+[ req_distinguished_name ]
+C  = US
+ST = YourState
+L  = YourCity
+O  = YourOrganization
+CN = 192.168.18.27
+
+[ v3_req ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+IP.1 = 192.168.18.27
+# You can add more IPs or DNS names as needed:
+# IP.2 = 127.0.0.1
+# DNS.1 = localhost

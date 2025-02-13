@@ -1,0 +1,34 @@
+Step 1: Create a CA Certificate
+Generate a CA key and a self‑signed CA certificate:
+
+bash
+Copy
+# Generate CA key
+openssl genrsa -out ca.key 4096
+
+# Generate CA certificate (valid for 10 years)
+openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 -out ca.crt -subj "/CN=MyCustomCA"
+Step 2: Generate and Sign a Worker Certificate
+Generate the worker's private key:
+
+bash
+Copy
+openssl genrsa -out worker.key 4096
+Create a certificate signing request (CSR) for the worker:
+
+bash
+Copy
+openssl req -new -key worker.key -out worker.csr -subj "/CN=localhost"
+Create an extensions file (extfile.cnf) to specify the Subject Alternative Name:
+
+Create a file named extfile.cnf with the following content:
+
+ini
+Copy
+subjectAltName = DNS:localhost
+Sign the CSR with your CA:
+
+bash
+Copy
+openssl x509 -req -in worker.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
+  -out worker.crt -days 365 -sha256 -extfile extfile.cnf
