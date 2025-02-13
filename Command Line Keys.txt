@@ -1,0 +1,3 @@
+go run "e:\Assignments\S8\Blockchain\A1\worker.go"-port 1235 -cert worker1.crt -key worker1.key
+
+go run coordinator.go -workers "localhost:1235,localhost:1236,localhost:1237"
