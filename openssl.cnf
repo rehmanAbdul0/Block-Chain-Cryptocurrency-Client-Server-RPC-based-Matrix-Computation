@@ -1,16 +1,20 @@
-[req]
+[ req ]
 distinguished_name = req_distinguished_name
-x509_extensions = v3_req
-prompt = no
+req_extensions     = v3_req
+prompt             = no
 
-[req_distinguished_name]
-CN = localhost
+[ req_distinguished_name ]
+C  = US
+ST = YourState
+L  = YourCity
+O  = YourOrganization
+CN = 192.168.18.27
 
-[v3_req]
-keyUsage = critical, digitalSignature, keyEncipherment
-extendedKeyUsage = serverAuth
+[ v3_req ]
 subjectAltName = @alt_names
 
-[alt_names]
-DNS.1 = localhost
-IP.1 = 127.0.0.1
+[ alt_names ]
+IP.1 = 192.168.18.27
+# You can add more IPs or DNS names as needed:
+IP.2 = 127.0.0.1
+# DNS.1 = localhost
