@@ -481,7 +481,7 @@ type Coordinator struct {
 	mu      sync.Mutex
 }
 
-// Establish TLS configuration
+// Establish TLS configuration for incoming client connections.
 func loadTLSConfig() (*tls.Config, error) {
 	caCert, err := os.ReadFile("ca.crt")
 	if err != nil {
@@ -503,7 +503,7 @@ func loadTLSConfig() (*tls.Config, error) {
 	}, nil
 }
 
-// Validate matrix dimensions before sending them to the worker
+// Validate matrix dimensions before sending them to the worker.
 func validateMatrixOperation(args *Args) error {
 	switch args.Operation {
 	case "add":
@@ -524,53 +524,61 @@ func validateMatrixOperation(args *Args) error {
 	return nil
 }
 
-// Compute matrix operation using a worker
+// Compute sends the matrix operation to an available worker.
+// If a connection error occurs or the worker returns an error, it will try the next worker.
+// If all workers fail, it returns an error.
 func (c *Coordinator) Compute(args *Args, reply *[][]int) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	fmt.Println("Received request: Operation =", args.Operation)
 
-	// Validate matrices before sending to worker
+	// Validate matrices before sending them to a worker.
 	if err := validateMatrixOperation(args); err != nil {
 		return err
 	}
 
+	// Load the CA certificate once outside the loop.
+	caCert, err := os.ReadFile("ca.crt")
+	if err != nil {
+		return fmt.Errorf("failed to read CA certificate: %v", err)
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	var lastErr error
+
 	for _, worker := range c.workers {
 		fmt.Println("Trying worker:", worker)
-
-		caCert, err := os.ReadFile("ca.crt")
-		if err != nil {
-			log.Fatal("Failed to read CA certificate:", err)
-		}
-
-		caCertPool := x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
 
 		config := &tls.Config{RootCAs: caCertPool}
 
 		conn, err := tls.Dial("tcp", worker, config)
 		if err != nil {
 			log.Printf("Failed to connect to worker %s: %v", worker, err)
+			lastErr = err
 			continue
 		}
-		defer conn.Close()
 
 		client := rpc.NewClient(conn)
-		defer client.Close()
-
 		var result [][]int
 		err = client.Call("Worker.PerformOperation", args, &result)
 		if err != nil {
 			log.Printf("Worker %s failed to perform operation: %v", worker, err)
-			return err // Return error back to client
+			lastErr = err
+			client.Close()
+			conn.Close()
+			continue
 		}
 
+		// Close the client and connection before returning.
+		client.Close()
+		conn.Close()
 		*reply = result
 		return nil
 	}
 
-	return errors.New("all workers failed")
+	return fmt.Errorf("all workers failed: %v", lastErr)
 }
 
 func main() {

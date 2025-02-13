@@ -150,6 +150,7 @@ import (
 	"log"
 	"net/rpc"
 	"os"
+	"time"
 )
 
 type Args struct {
@@ -161,8 +162,12 @@ type Args struct {
 type Worker struct{}
 
 // PerformOperation executes the requested matrix operation and returns the result.
+// It waits for 5 seconds before processing the request.
 func (w *Worker) PerformOperation(args *Args, reply *[][]int) error {
 	log.Println("Received operation:", args.Operation)
+
+	// Introduce a 5-second delay
+	time.Sleep(15 * time.Second)
 
 	// Check the operation type
 	switch args.Operation {
