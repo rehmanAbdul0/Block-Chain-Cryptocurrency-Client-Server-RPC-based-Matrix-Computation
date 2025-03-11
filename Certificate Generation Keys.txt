@@ -30,5 +30,4 @@ Sign the CSR with your CA:
 
 bash
 Copy
-openssl x509 -req -in worker.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
-  -out worker.crt -days 365 -sha256 -extfile extfile.cnf
+openssl x509 -req -in worker.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out worker.crt -days 365 -sha256 -extfile extfile.cnf
