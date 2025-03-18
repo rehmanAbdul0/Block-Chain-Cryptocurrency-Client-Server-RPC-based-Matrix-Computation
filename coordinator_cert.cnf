@@ -13,3 +13,4 @@ subjectAltName = @alt_names
 
 [ alt_names ]
 IP.1 = 192.168.18.27
+IP.2 = 172.20.10.3
